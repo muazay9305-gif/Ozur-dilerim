@@ -7,15 +7,18 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: radial-gradient(circle, #ffb6c1, #ff69b4);
   overflow: hidden;
-  text-align: center;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle, #ffb6c1, #ff5f9e);
 }
 
 h1 {
+  position: fixed;
+  top: 10px;
+  width: 100%;
+  text-align: center;
   color: #7a003c;
-  margin-top: 10px;
+  z-index: 10;
 }
 
 #face {
@@ -25,13 +28,52 @@ h1 {
   background: url("C3B3DE42-1748-4548-8A3B-3846272260E6.png") center/cover no-repeat;
   position: absolute;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.08s;
+}
+
+/* HASAR EFEKTLERİ */
+.bruise {
+  box-shadow:
+    inset -15px 0 25px rgba(80,0,120,0.5),
+    inset 15px 0 25px rgba(0,0,0,0.5);
+}
+
+.black-eye {
+  filter: brightness(0.8) saturate(0.7);
+}
+
+/* KAN (CARTOON) */
+.blood {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  background: radial-gradient(circle, red 40%, darkred 75%);
+  border-radius: 50%;
+  animation: bloodPop 1s forwards;
+}
+
+@keyframes bloodPop {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* KALP */
+.heart {
+  position: absolute;
+  font-size: 28px;
+  animation: heartPop 1s forwards;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
 
 #ui {
   position: fixed;
   bottom: 10px;
   width: 100%;
+  text-align: center;
   color: #4a0024;
 }
 
@@ -44,25 +86,16 @@ h1 {
   font-size: 18px;
 }
 
-.heart {
-  position: absolute;
-  font-size: 26px;
-  animation: heartPop 1s forwards;
-}
-
-@keyframes heartPop {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2.5); opacity: 0; }
-}
-
 #end {
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.85);
   color: white;
-  font-size: 30px;
+  font-size: 32px;
+  text-align: center;
   padding-top: 30vh;
+  z-index: 20;
 }
 </style>
 </head>
@@ -96,15 +129,15 @@ const endScreen = document.getElementById("end");
 const sound = document.getElementById("sound");
 
 let score = 0;
-let time = 60;
+let time = 30;
 let active = true;
 
 const messages = [
   "TAMAM HAKLISIN 😭",
   "BİR DAHA ASLA 🙃",
-  "ANNEM DE KIZDI AMA BU KADAR DEĞİL 😅",
+  "ANNEM DE KIZDI AMA BU BAŞKA 😅",
   "LÜTFEN DUR 🥲",
-  "BEN MALIM 🤡",
+  "BEN HAKSIZIM 🤡",
   "ÖZÜR DİLERİM AŞKIM ❤️",
   "KAFAM GİTTİ 💥",
   "SEN MÜKEMMELSİN 😍"
@@ -124,15 +157,26 @@ face.addEventListener("click", () => {
   scoreEl.textContent = "Vuruş: " + score;
   message.textContent = messages[Math.floor(Math.random() * messages.length)];
 
-  // YAMULMA ANİMASYONU
-  const rotate = (Math.random() * 60) - 30;
-  const scaleX = 0.8 + Math.random() * 0.4;
-  const scaleY = 0.8 + Math.random() * 0.4;
+  /* PROGRESSIVE HASAR */
+  if (score > 5) face.classList.add("bruise");
+  if (score > 10) face.classList.add("black-eye");
 
+  /* YAMULMA */
+  const rotate = (Math.random() * 120) - 60;
+  const scaleX = 0.6 + Math.random() * 0.6;
+  const scaleY = 0.6 + Math.random() * 0.6;
   face.style.transform = `rotate(${rotate}deg) scale(${scaleX}, ${scaleY})`;
   setTimeout(() => face.style.transform = "none", 120);
 
-  // Kalp efekti
+  /* KAN */
+  const blood = document.createElement("div");
+  blood.className = "blood";
+  blood.style.left = (face.offsetLeft + Math.random() * 120) + "px";
+  blood.style.top = (face.offsetTop + Math.random() * 120) + "px";
+  document.body.appendChild(blood);
+  setTimeout(() => blood.remove(), 1000);
+
+  /* KALP */
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.textContent = "❤️";
@@ -147,6 +191,7 @@ face.addEventListener("click", () => {
   moveFace();
 });
 
+/* SAYAÇ */
 const timer = setInterval(() => {
   time--;
   timerEl.textContent = "Süre: " + time;
