@@ -2,51 +2,66 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Affet Beni Oyunu 😭</title>
+<title>Affet Beni 😭</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-  text-align: center;
   margin: 0;
-  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle, #ffb6c1, #ff69b4);
   overflow: hidden;
+  text-align: center;
 }
-h1 { color: #8b0033; }
+
+h1 {
+  color: #7a003c;
+  margin-top: 10px;
+}
+
 #face {
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  object-fit: cover;
+  background: url("face.jpg") center/cover no-repeat;
+  position: absolute;
   cursor: pointer;
-  display: none;
-  position: absolute;
+  transition: transform 0.1s;
 }
-.heart {
-  position: absolute;
-  font-size: 24px;
-  animation: pop 1s forwards;
-}
-@keyframes pop {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
-}
+
 #ui {
   position: fixed;
   bottom: 10px;
-  left: 0;
-  right: 0;
+  width: 100%;
+  color: #4a0024;
 }
-#message { font-size: 20px; min-height: 30px; }
-#score, #timer { font-size: 18px; }
+
+#message {
+  font-size: 20px;
+  min-height: 30px;
+}
+
+#score, #timer {
+  font-size: 18px;
+}
+
+.heart {
+  position: absolute;
+  font-size: 26px;
+  animation: heartPop 1s forwards;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
 #end {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.85);
   color: white;
-  font-size: 28px;
+  font-size: 30px;
   padding-top: 30vh;
 }
 </style>
@@ -55,9 +70,8 @@ h1 { color: #8b0033; }
 <body>
 
 <h1>Vur Ama Affet ❤️</h1>
-<input type="file" accept="image/*" id="upload">
 
-<img id="face">
+<div id="face"></div>
 
 <div id="ui">
   <div id="message"></div>
@@ -74,7 +88,6 @@ h1 { color: #8b0033; }
 <audio id="sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
 <script>
-const upload = document.getElementById("upload");
 const face = document.getElementById("face");
 const message = document.getElementById("message");
 const scoreEl = document.getElementById("score");
@@ -84,47 +97,42 @@ const sound = document.getElementById("sound");
 
 let score = 0;
 let time = 30;
-let gameActive = false;
+let active = true;
 
 const messages = [
   "TAMAM HAKLISIN 😭",
-  "BİR DAHA ASLA (yeminle) 🙃",
-  "ANNEM DE KIZDI AMA BU SEVİYE DEĞİL 😅",
+  "BİR DAHA ASLA 🙃",
+  "ANNEM DE KIZDI AMA BU KADAR DEĞİL 😅",
   "LÜTFEN DUR 🥲",
-  "SEVGİLİM HAKLI BEN HAKSIZIM 🤡",
+  "BEN MALIM 🤡",
   "ÖZÜR DİLERİM AŞKIM ❤️",
-  "KALBİM GİTTİ 💥",
+  "KAFAM GİTTİ 💥",
   "SEN MÜKEMMELSİN 😍"
 ];
 
-upload.addEventListener("change", () => {
-  const file = upload.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    face.src = reader.result;
-    face.style.display = "block";
-    moveFace();
-    startTimer();
-    gameActive = true;
-  };
-  reader.readAsDataURL(file);
-});
-
 function moveFace() {
-  face.style.left = Math.random() * (window.innerWidth - 180) + "px";
-  face.style.top = Math.random() * (window.innerHeight - 250) + "px";
+  face.style.left = Math.random() * (window.innerWidth - 200) + "px";
+  face.style.top = Math.random() * (window.innerHeight - 260) + "px";
 }
 
+moveFace();
+
 face.addEventListener("click", () => {
-  if (!gameActive) return;
+  if (!active) return;
 
   score++;
   scoreEl.textContent = "Vuruş: " + score;
   message.textContent = messages[Math.floor(Math.random() * messages.length)];
-  sound.currentTime = 0;
-  sound.play();
 
+  // YAMULMA ANİMASYONU
+  const rotate = (Math.random() * 60) - 30;
+  const scaleX = 0.8 + Math.random() * 0.4;
+  const scaleY = 0.8 + Math.random() * 0.4;
+
+  face.style.transform = `rotate(${rotate}deg) scale(${scaleX}, ${scaleY})`;
+  setTimeout(() => face.style.transform = "none", 120);
+
+  // Kalp efekti
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.textContent = "❤️";
@@ -133,21 +141,22 @@ face.addEventListener("click", () => {
   document.body.appendChild(heart);
   setTimeout(() => heart.remove(), 1000);
 
+  sound.currentTime = 0;
+  sound.play();
+
   moveFace();
 });
 
-function startTimer() {
-  const interval = setInterval(() => {
-    time--;
-    timerEl.textContent = "Süre: " + time;
-    if (time <= 0) {
-      clearInterval(interval);
-      gameActive = false;
-      face.style.display = "none";
-      endScreen.style.display = "block";
-    }
-  }, 1000);
-}
+const timer = setInterval(() => {
+  time--;
+  timerEl.textContent = "Süre: " + time;
+  if (time <= 0) {
+    clearInterval(timer);
+    active = false;
+    face.style.display = "none";
+    endScreen.style.display = "block";
+  }
+}, 1000);
 </script>
 
 </body>
